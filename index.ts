@@ -56,6 +56,11 @@ app.use(
 );
 
 // routes
+app.use("/health", async (req: Request, res: Response) => {
+    res.status(404).json({
+        message: "SERVER IS UP",
+    });
+});
 app.use("/user", userRoutes);
 app.use("/data", authMiddleware, dataRoutes);
 app.use("*", async (req: Request, res: Response) => {
