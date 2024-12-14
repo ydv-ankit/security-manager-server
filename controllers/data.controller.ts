@@ -35,7 +35,7 @@ const getData = async (req: Request, res: Response) => {
 
 const addData = async (req: Request, res: Response) => {
     try {
-        await DataModel.create({
+        const newData = await DataModel.create({
             userid: req.body.userid,
             site: req.body.site,
             username: req.body.username,
@@ -45,6 +45,7 @@ const addData = async (req: Request, res: Response) => {
         });
         res.status(201).json({
             message: CONSTANTS.USER_DATA_ADDED,
+            data: newData,
         });
     } catch (error) {
         console.log(error);
@@ -58,15 +59,22 @@ const updateData = async (req: Request, res: Response) => {
     try {
         const id = req.params.id;
 
-        await DataModel.findByIdAndUpdate(id, {
-            site: req.body.site,
-            username: req.body.username,
-            email: req.body.email,
-            password: req.body.password,
-            others: req.body.others,
-        });
+        const updatedData = await DataModel.findByIdAndUpdate(
+            id,
+            {
+                site: req.body.site,
+                username: req.body.username,
+                email: req.body.email,
+                password: req.body.password,
+                others: req.body.others,
+            },
+            {
+                new: true,
+            }
+        );
         res.status(202).json({
             message: CONSTANTS.USER_DATA_UPDATED,
+            data: updatedData,
         });
     } catch (error) {
         res.status(500).json({

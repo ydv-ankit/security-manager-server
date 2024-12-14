@@ -27,9 +27,14 @@ const register = async (req: Request, res: Response) => {
         const { accessToken } = generateRefreshAndAccessToken(
             newUser?._id.toString()
         );
-        res.status(201).cookie("accessToken", accessToken, cookieOptions).json({
-            message: CONSTANTS.USER_CREATED,
-        });
+        res.status(201)
+            .cookie("accessToken", accessToken, cookieOptions)
+            .json({
+                message: CONSTANTS.USER_CREATED,
+                data: {
+                    username: data.username,
+                },
+            });
     } catch (error) {
         res.status(500).json({
             message: CONSTANTS.INTERNAL_SERVER_ERROR,
