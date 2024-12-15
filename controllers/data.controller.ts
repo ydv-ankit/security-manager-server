@@ -26,7 +26,6 @@ const getData = async (req: Request, res: Response) => {
             data: decryptedData,
         });
     } catch (error) {
-        console.log(error);
         res.status(500).json({
             message: CONSTANTS.INTERNAL_SERVER_ERROR,
         });
@@ -43,12 +42,12 @@ const addData = async (req: Request, res: Response) => {
             password: encrypt(req.body.password),
             others: req.body.others,
         });
+        newData.password = decrypt(newData.password);
         res.status(201).json({
             message: CONSTANTS.USER_DATA_ADDED,
             data: newData,
         });
     } catch (error) {
-        console.log(error);
         res.status(500).json({
             message: CONSTANTS.INTERNAL_SERVER_ERROR,
         });
@@ -65,17 +64,25 @@ const updateData = async (req: Request, res: Response) => {
                 site: req.body.site,
                 username: req.body.username,
                 email: req.body.email,
-                password: req.body.password,
+                password: encrypt(req.body.password),
                 others: req.body.others,
             },
             {
                 new: true,
             }
         );
-        res.status(202).json({
-            message: CONSTANTS.USER_DATA_UPDATED,
-            data: updatedData,
-        });
+
+        if (updatedData) {
+            updatedData.password = decrypt(updatedData?.password);
+            res.status(202).json({
+                message: CONSTANTS.USER_DATA_UPDATED,
+                data: updatedData,
+            });
+        } else {
+            res.status(400).json({
+                message: CONSTANTS.ERROR_OCCURED,
+            });
+        }
     } catch (error) {
         res.status(500).json({
             message: CONSTANTS.INTERNAL_SERVER_ERROR,
