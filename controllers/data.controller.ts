@@ -34,6 +34,13 @@ const getData = async (req: Request, res: Response) => {
 
 const addData = async (req: Request, res: Response) => {
     try {
+        if (
+            !req.body.password ||
+            !req.body.username ||
+            !req.body.site ||
+            !req.body.email
+        )
+            throw new Error("invalid data");
         const newData = await DataModel.create({
             userid: req.body.userid,
             site: req.body.site,
@@ -64,7 +71,9 @@ const updateData = async (req: Request, res: Response) => {
                 site: req.body.site,
                 username: req.body.username,
                 email: req.body.email,
-                password: encrypt(req.body.password),
+                password: req.body.password
+                    ? encrypt(req.body.password)
+                    : undefined,
                 others: req.body.others,
             },
             {
