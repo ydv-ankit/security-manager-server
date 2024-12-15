@@ -84,4 +84,17 @@ const login = async (req: Request, res: Response) => {
     }
 };
 
-export { register, login };
+const logout = async (req: Request, res: Response) => {
+    try {
+        res.status(200).cookie("accessToken", "", cookieOptions).json({
+            message: CONSTANTS.USER_LOGOUT,
+        });
+        return;
+    } catch (error) {
+        res.status(500).json({
+            message: CONSTANTS.INTERNAL_SERVER_ERROR,
+        });
+    }
+};
+
+export { register, login, logout };
