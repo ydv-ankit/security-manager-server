@@ -3,6 +3,7 @@ import { CONSTANTS } from "../utils/constants";
 import { cookieOptions, generateRefreshAndAccessToken } from "../utils/token";
 import { UserModel } from "../models/user.model";
 import bcrypt from "bcryptjs";
+import { DataModel } from "../models/data.model";
 
 const register = async (req: Request, res: Response) => {
     try {
@@ -97,4 +98,62 @@ const logout = async (req: Request, res: Response) => {
     }
 };
 
-export { register, login, logout };
+const deleteUser = async (req: Request, res: Response) => {
+    try {
+        const userid = req.body.userid;
+
+        // first, delete user data
+        await DataModel.deleteMany({
+            userid,
+        });
+        await UserModel.findByIdAndDelete(userid);
+        res.status(200).json({
+            message: CONSTANTS.USER_DELETED_SUCCESSFULLY,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: CONSTANTS.INTERNAL_SERVER_ERROR,
+        });
+    }
+};
+
+const changeUserPassword = async (req: Request, res: Response) => {
+    try {
+        const newPassword = req.body.newPassword;
+        const oldPassword = req.body.oldPassword;
+        // get user data
+        const isUserExists = await UserModel.findById(req.body.userid);
+        if (isUserExists) {
+            // compare old password
+            const verifyOldPasswordHash = bcrypt.compareSync(
+                oldPassword,
+                isUserExists.password
+            );
+            if (verifyOldPasswordHash) {
+                const salt = bcrypt.genSaltSync(10);
+                const hashedPassword = bcrypt.hashSync(newPassword, salt);
+                isUserExists.password = hashedPassword;
+                await isUserExists.save();
+                res.status(200).json({
+                    message: CONSTANTS.PASSWORD_CHANGED,
+                });
+            } else {
+                res.status(400).json({
+                    message: CONSTANTS.INCORRECT_CREDENTIALS,
+                });
+            }
+        } else {
+            res.status(400).json({
+                message: CONSTANTS.NO_USER,
+            });
+        }
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            message: CONSTANTS.INTERNAL_SERVER_ERROR,
+        });
+    }
+};
+
+export { register, login, logout, deleteUser, changeUserPassword };
